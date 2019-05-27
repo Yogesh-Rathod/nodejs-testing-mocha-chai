@@ -7,11 +7,14 @@ const productRoutes = require('./api/routes/products');
 const orderRoutes = require('./api/routes/orders');
 const userRoutes = require('./api/routes/user');
 
-mongoose.connect(process.env.MONGO_URL_DEV);
+mongoose.connect('mongodb://localhost/tests');
 
 const app = express();
 // Log request data
-app.use(morgan('dev'));
+
+if (process.env.NODE_ENV !== 'test') {
+    app.use(morgan('dev'));
+}
 
 // Setup static files path
 app.use('/uploads', express.static('uploads'));
@@ -30,6 +33,18 @@ app.use((req, res, next) => {
     }
     next();
 });
+
+let book = require('./api/controllers/book');
+
+app.get("/", (req, res) => res.json({ message: "Welcome to our Bookstore!" }));
+
+app.route("/book")
+    .get(book.getBooks)
+    .post(book.postBook);
+app.route("/book/:id")
+    .get(book.getBook)
+    .delete(book.deleteBook)
+    .put(book.updateBook);
 
 // Routes which should handle requests
 app.use('/products', productRoutes);

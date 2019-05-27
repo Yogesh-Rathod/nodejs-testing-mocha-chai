@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const User = require('../models/user');
@@ -10,7 +9,7 @@ exports.signUp = (req, res, next) => {
         .exec()
         .then(user => {
             if (user.length < 1) {
-                return bcrypt.hash(req.body.password, 10);
+                return req.body.password;
             }
             const error = new Error();
             error.message = 'User Exists!';
@@ -43,7 +42,7 @@ exports.logIn = (req, res, next) => {
             }
             email = user[0].email;
             userId = user[0]._id;
-            return bcrypt.compare(req.body.password, user[0].password);
+            return req.body.password === user[0].password;
         })
         .then(result => {
             if (result) {
