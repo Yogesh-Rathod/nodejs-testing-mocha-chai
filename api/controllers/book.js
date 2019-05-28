@@ -1,6 +1,12 @@
 let mongoose = require('mongoose');
 let Book = require('../models/book');
+const sharp = require('sharp');
 
+var aws = require('aws-sdk');
+var s3 = new aws.S3({
+    // accessKeyId: process.env.AWS_ACCESS_KEY,
+    // secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
 /*
  * GET /book route to retrieve all the books.
  */
@@ -14,18 +20,40 @@ function getBooks(req, res) {
     });
 }
 
+
 /*
  * POST /book to save a new book.
  */
-function postBook(req, res) {
-    //Creates a new book
-    var newBook = new Book(req.body);
-    //Save it into the DB.
+async function postBook(req, res) {
+    const file = req.file;
+    const params = {
+        Bucket: 'aedeon-files-upload',
+        Key: `temp/${file.originalname}-${Date.now().toString()}`,
+        Body: file.buffer
+    };
+
+    const uploadedImage = await s3.upload(params).promise();
+
+    const semiTransparentRedPng = await sharp(file.buffer).resize(50, 50)
+        .png()
+        .toBuffer();
+
+    const params1 = {
+        Bucket: 'aedeon-files-upload',
+        Key: `${params.Key}-thumb`,
+        Body: semiTransparentRedPng
+    };
+
+    const uploadedThumbImage = await s3.upload(params1).promise();
+
+    let bookInfo = req.body;
+    bookInfo['image'] = uploadedImage.Location;
+    bookInfo['thumb'] = uploadedThumbImage.Location;
+    var newBook = new Book(bookInfo);
     newBook.save((err, book) => {
         if (err) {
             res.send(err);
-        }
-        else { //If no errors, send it back to the client
+        } else {
             res.json({ message: "Book successfully added!", book });
         }
     });
@@ -64,5 +92,10 @@ function updateBook(req, res) {
     });
 }
 
+
+function uploadBookImage(req, res) {
+    res.send(req.file.location)
+}
+
 //export all the functions
-module.exports = { getBooks, postBook, getBook, deleteBook, updateBook };
+module.exports = { getBooks, postBook, getBook, deleteBook, updateBook, uploadBookImage };

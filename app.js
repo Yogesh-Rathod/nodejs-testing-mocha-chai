@@ -6,8 +6,10 @@ const mongoose = require('mongoose');
 const productRoutes = require('./api/routes/products');
 const orderRoutes = require('./api/routes/orders');
 const userRoutes = require('./api/routes/user');
+const bookRoutes = require('./api/routes/book');
 
 mongoose.connect('mongodb://localhost/tests');
+
 
 const app = express();
 // Log request data
@@ -34,22 +36,12 @@ app.use((req, res, next) => {
     next();
 });
 
-let book = require('./api/controllers/book');
-
-app.get("/", (req, res) => res.json({ message: "Welcome to our Bookstore!" }));
-
-app.route("/book")
-    .get(book.getBooks)
-    .post(book.postBook);
-app.route("/book/:id")
-    .get(book.getBook)
-    .delete(book.deleteBook)
-    .put(book.updateBook);
 
 // Routes which should handle requests
 app.use('/products', productRoutes);
 app.use('/orders', orderRoutes);
 app.use('/user', userRoutes);
+app.use('/book', bookRoutes)
 
 // Handle Error Requests
 app.use((req, res, next) => {
