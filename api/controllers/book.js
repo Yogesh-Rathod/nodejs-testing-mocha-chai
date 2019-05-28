@@ -1,4 +1,3 @@
-let mongoose = require('mongoose');
 let Book = require('../models/book');
 const sharp = require('sharp');
 
