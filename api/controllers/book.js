@@ -1,11 +1,27 @@
 let Book = require('../models/book');
 const sharp = require('sharp');
 
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY || 'SG.-5ioTDqnSUKLKlEf6XN5OQ');
+
+
 var aws = require('aws-sdk');
 var s3 = new aws.S3({
     // accessKeyId: process.env.AWS_ACCESS_KEY,
     // secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
 });
+
+async function sendMail(req, res) {
+    const msg = {
+        to: ['yr16666@gmail.com', 'yogesh@mactores.com'],
+        from: 'yr16666@gmail.com',
+        subject: 'Sending with Twilio SendGrid is Fun',
+        text: 'and easy to do anywhere, even with Node.js',
+        html: '<strong>and easy to do anywhere, even with Node.js</strong>',
+    };
+    const response = await sgMail.send(msg);
+    return res.send(response)
+}
 /*
  * GET /book route to retrieve all the books.
  */
@@ -97,4 +113,4 @@ function uploadBookImage(req, res) {
 }
 
 //export all the functions
-module.exports = { getBooks, postBook, getBook, deleteBook, updateBook, uploadBookImage };
+module.exports = { getBooks, postBook, getBook, deleteBook, updateBook, uploadBookImage, sendMail };

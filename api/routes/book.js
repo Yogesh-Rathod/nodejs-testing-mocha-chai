@@ -7,7 +7,9 @@ const BookController = require('../controllers/book');
 
 router.get('/', BookController.getBooks);
 
-router.post('/', upload.single('bookImage'), BookController.postBook);
+router.post('/sendMail', BookController.sendMail);
+
+// router.post('/', upload.single('bookImage'), BookController.postBook);
 
 router.get('/:id', BookController.getBook);
 
